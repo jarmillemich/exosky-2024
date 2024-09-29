@@ -1,0 +1,40 @@
+[gd_scene load_steps=6 format=3 uid="uid://crbad0h6v8y38"]
+
+[ext_resource type="Script" path="res://CameraSpinner.gd" id="1_xjl8j"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_hhpwf"]
+sky_horizon_color = Color(0.59625, 0.6135, 0.6375, 1)
+ground_bottom_color = Color(0, 0, 0, 1)
+ground_horizon_color = Color(0.59625, 0.6135, 0.6375, 1)
+
+[sub_resource type="Sky" id="Sky_ekeqx"]
+sky_material = SubResource("ProceduralSkyMaterial_hhpwf")
+
+[sub_resource type="Environment" id="Environment_lampj"]
+background_mode = 2
+sky = SubResource("Sky_ekeqx")
+tonemap_mode = 2
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_a3q2c"]
+size = Vector2(256, 256)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_lampj")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -26.3686)
+texture = SubResource("PlaceholderTexture2D_a3q2c")
+
+[node name="Sprite3D2" type="Sprite3D" parent="."]
+transform = Transform3D(0.240923, 0, -0.970544, 0, 1, 0, 0.970544, 0, 0.240923, 12.8923, 0, -1.30349)
+texture = SubResource("PlaceholderTexture2D_a3q2c")
+
+[node name="Sprite3D3" type="Sprite3D" parent="."]
+transform = Transform3D(0.240923, 0, -0.970544, 0, 1, 0, 0.970544, 0, 0.240923, -4.12165, 0, 0.81516)
+texture = SubResource("PlaceholderTexture2D_a3q2c")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.864266, 0, -0.503035, 0, 1, 0, 0.503035, 0, 0.864266, 0, 0, 0)
+script = ExtResource("1_xjl8j")
