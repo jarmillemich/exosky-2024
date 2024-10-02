@@ -1,5 +1,6 @@
-[gd_scene load_steps=6 format=3 uid="uid://crbad0h6v8y38"]
+[gd_scene load_steps=7 format=3 uid="uid://crbad0h6v8y38"]
 
+[ext_resource type="Script" path="res://sky_view.gd" id="1_4uy5n"]
 [ext_resource type="Script" path="res://CameraSpinner.gd" id="1_xjl8j"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_hhpwf"]
@@ -19,6 +20,7 @@ tonemap_mode = 2
 size = Vector2(256, 256)
 
 [node name="Node3D" type="Node3D"]
+script = ExtResource("1_4uy5n")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_lampj")
@@ -38,3 +40,5 @@ texture = SubResource("PlaceholderTexture2D_a3q2c")
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.864266, 0, -0.503035, 0, 1, 0, 0.503035, 0, 0.864266, 0, 0, 0)
 script = ExtResource("1_xjl8j")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="."]
