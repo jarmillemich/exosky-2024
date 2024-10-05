@@ -80,10 +80,12 @@ static func gatherStars(stars: Array[ApiHelper.StarData]):
 	for i in stars:
 		staged_stars.push_back(i)
 
+var stars: Array[Star] = []
+
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	if(staged_stars.size() > 0):
-		var stars: Array[Star] = []
+		
 		print(staged_stars.size())
 		for i in staged_stars:
 			print('Loop')
