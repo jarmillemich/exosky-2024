@@ -88,7 +88,7 @@ func _process(delta):
 		
 		print(staged_stars.size())
 		for i in staged_stars:
-			print('Loop')
+			#print('Loop')
 			var star = Star.new(i.get_inertial_coordinates_ly(), i.get_relative_luminosity(), i.temperature, '', '')
 			stars.push_back(star)
 		

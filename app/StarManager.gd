@@ -173,12 +173,31 @@ func _init():
 
 	add_child(inst)
 
+	# Re-use the same shape
+	#var shape = inst.multimesh.mesh.create_trimesh_shape()
+	# Create one static body
+	var collisionNode = StaticBody3D.new()
+	inst.add_child(collisionNode)
+
+	# for mesh_index in range(inst.multimesh.instance_count):
+	# 	var positionT = Transform3D().translated(Vector3(mesh_index*2, 10+2, 0)).scaled(Vector3(1,1,1))
+	# 	inst.multimesh.set_instance_transform(mesh_index, positionT)
+
+	# 	# Create many collision shapes
+	# 	var collisionShape = CollisionShape3D.new()
+	# 	collisionShape.shape = shape
+	# 	collisionShape.transform = positionT
+	# 	collisionNode.add_child(collisionShape)
+
+
+
+
 func set_stars(stars: Array[Star]):
 	mesh.instance_count = 0
 	mesh.instance_count = stars.size()
 	print("Set stars")
 	for i in range(stars.size()):
-		print(i)
+		#print(i)
 		var star = stars[i]
 		var transform = Transform3D().translated(star.position)
 		mesh.set_instance_transform(i, transform)
