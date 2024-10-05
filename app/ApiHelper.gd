@@ -1,5 +1,6 @@
 extends Node
 
+signal populate_stars_inner(stars: Array[StarData])
 signal populate_stars(stars: Array[StarData])
 
 # XXX Assuming things about threading...
@@ -20,19 +21,47 @@ func TestEarthQuery():
 
 	run_query(query)
 
+	# Forward directly
+	populate_stars.emit(await populate_stars_inner)
+
 	#_load_builtin_starmap("test_earth_small")
 
 func TargettedQuery(target: Target):
 	# NB we'll just be emitting the stars as we get them, caller is responsible for aggregating
-	for distance in range(100, target.dist_pc, 100):
-		var step = target.make_query_step(distance)
+	# We do de-duplicate though!
+	var step_size = 20
+
+	# Gather up the stars 
+	var seen_stars := { 0: null }
+	
+	# NB We'll not include anything within 1pc using this method
+	for distance in range(1, target.dist_pc - step_size, step_size):
+		var step = target.make_query_step(distance, distance + step_size)
 		var cone_query = step.make_cone_query()
 		print("My query is %s" % cone_query)
 		run_query(cone_query)
+		print("Finished loading %d/%d" % [distance, target.dist_pc])
+
+		var pop = await populate_stars_inner
+
+		var bucket: Array[StarData] = []
+
+		for star: StarData in pop:
+			if !seen_stars.has(star.source_id):
+				bucket.append(star)
+			
+			seen_stars[star.source_id] = star
+		
+		populate_stars.emit(bucket)
+
+	# Emit the sources all at once
+	print("Finished loading")
+	#populate_stars.emit(seen_stars.values())
 
 func run_query(query: String):
 	if running_query:
 		query_queue.append(query)
+		return
 	else:
 		running_query = true
 
@@ -50,18 +79,26 @@ func run_query(query: String):
 	var full_query = "https://gea.esac.esa.int/tap-server/tap/sync?" + params
 
 	var request = HTTPRequest.new()
+	#request.download_chunk_size = 1024 * 1024
+	# XXX Required for responses above like 5KiB?
+	request.use_threads = true
 	add_child(request)
 
 	print("[API] Requesting: ", full_query)
-	
-	request.request_completed.connect(_on_req_complete)
-	
+
 	var error = request.request(full_query)
 
 	if error != OK:
 		print("Error: ", error)
+	
+	var reply: Array = await request.request_completed;
 
-func _on_req_complete(result, _response_code, _headers, body):
+	request.queue_free()
+
+	var result: int = reply[0]
+	var response_code: int = reply[1]
+	var body: PackedByteArray = reply[3]
+
 	running_query = false
 	
 	# Maybe queue another
@@ -70,15 +107,12 @@ func _on_req_complete(result, _response_code, _headers, body):
 		run_query(next_query)
 
 	if result != HTTPRequest.RESULT_SUCCESS:
-		print("Failed to load data from server: %d" % result)
+		print("Failed to load data from server: %d %d" % [result, response_code])
 		return
 	
 	var res = body.get_string_from_utf8()
-	print("Parse this stuff %d" % _response_code)
+	print("Got data with status %d" % response_code)
 
-	
-
-	print(res)
 	var json = JSON.parse_string(res)
 	_parse_and_emit_starmap(json)
 	
@@ -101,13 +135,14 @@ func _parse_and_emit_starmap(json):
 		var apparent_magnitude = row[2]
 		var distance_pc = row[3]
 		var temperature = row[4]
+		var source_id = row[5]
 
 		# print("Star %f %f %f" % [ra, dec, apparent_magnitude])
 
-		stars.append(StarData.new(ra, dec, apparent_magnitude, distance_pc, temperature))
+		stars.append(StarData.new(source_id, ra, dec, apparent_magnitude, distance_pc, temperature))
 
 	#emit_signal("populate_stars", stars)
-	populate_stars.emit(stars)
+	populate_stars_inner.emit(stars)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -157,12 +192,13 @@ class Target:
 
 		return direction * dist_ly
 
-	func make_query_step(radius_pc: float, min_magnitude_at_target: float = 6.5):
-		var near_radius = self.dist_pc - radius_pc
-		var far_radius = self.dist_pc + radius_pc
+	# TODO adjust magnitude threshold here, probably should be 6.5 to be comprehensive, but adjustmenets are needed for population selection
+	func make_query_step(min_radius_pc: float, max_radius_pc: float, min_magnitude_at_target: float = 4.0):
+		var near_radius = self.dist_pc - max_radius_pc
+		var far_radius = self.dist_pc + max_radius_pc
 
 		# Law of cosines
-		var r = radius_pc
+		var r = max_radius_pc
 		var d = self.dist_pc
 		var o = sqrt(d ** 2 - r ** 2)
 		var num = o ** 2 + d ** 2 - r ** 2
@@ -170,19 +206,22 @@ class Target:
 		var cos_half_theta = num / den
 		var theta_deg = 2 * acos(cos_half_theta) * 180 / PI
 
-		# print({
-		# 	"near_radius": near_radius,
-		# 	"far_radius": far_radius,
-		# 	"theta_deg": theta_deg,
-		# })
+		# Note, this will include many stars that are NOT visible from the target, we'll filter these out later
+		# This is necessary because this appears to be a good-ish way to query the GAIA dataset, vs doing calculations in ADQL
 
-		# How bright we'd have to be at the far edge of the radius
-		var min_absolute_magnititude_at_target = Math.apparent_to_abs_magnitude(min_magnitude_at_target, self.dist_pc)
+		# 1. We need anything at least as bright as the dimmest star visible from the target in our search shell
+		# How bright we'd have to be at the inner search disc/shell edge
+		var min_absolute_magnititude_at_target = Math.apparent_to_abs_magnitude(min_magnitude_at_target, min_radius_pc)
 
-		# How apparently bright we'd have to be rom Sol, which is what the dataset has
+		# How apparently bright we'd have to be rom Sol if we were at the farthest point of the search disc/shell, which is what the dataset has
 		var min_apparent_magnitude_from_source = Math.abs_to_apparent_magnitude(min_absolute_magnititude_at_target, far_radius)
 
-		return ConeQuery.new(self.ra, self.dec, theta_deg, near_radius, far_radius, min_apparent_magnitude_from_source)
+		# 2. We don't need anything brighter than any subsequent shells are going to find
+		var max_absolute_magnititude_at_target = Math.apparent_to_abs_magnitude(min_magnitude_at_target, max_radius_pc)
+		var max_apparent_magnitude_from_source = Math.abs_to_apparent_magnitude(max_absolute_magnititude_at_target, near_radius)
+
+		# TODO figure out max apparent magnitude limit
+		return ConeQuery.new(self.ra, self.dec, theta_deg, near_radius, far_radius, min_apparent_magnitude_from_source, max_apparent_magnitude_from_source)
 
 	
 
@@ -193,22 +232,24 @@ class ConeQuery:
 	var _near_radius: float
 	var _far_radius: float
 	var _min_apparent_magnitude: float
+	var _max_apparent_magnitude: float
 
-	func _init(target_ra: float, target_dec: float, theta_deg: float, near_radius: float, far_radius: float, min_apparent_magnitude: float):
+	func _init(target_ra: float, target_dec: float, theta_deg: float, near_radius: float, far_radius: float, min_apparent_magnitude: float, max_apparent_magnitude: float):
 		self._target_ra = target_ra
 		self._target_dec = target_dec
 		self._theta_deg = theta_deg
 		self._near_radius = near_radius
 		self._far_radius = far_radius
 		self._min_apparent_magnitude = min_apparent_magnitude
+		self._max_apparent_magnitude = max_apparent_magnitude
 
 	func make_cone_query():
 		return """
-			select top 200 ra, dec, phot_g_mean_mag, distance_gspphot, teff_gspphot
+			select top 10000 ra, dec, phot_g_mean_mag, distance_gspphot, teff_gspphot, source_id
 			from gaiadr3.gaia_source
 			where distance({target_ra}, {target_dec}, ra, dec) < {theta_deg}
 			and distance_gspphot between {near_radius} and {far_radius}
-			and phot_g_mean_mag < {min_apparent_magnitude}
+			and phot_g_mean_mag between {max_apparent_magnitude} and {min_apparent_magnitude}
 			and distance_gspphot is not null
 		""".format({
 			"target_ra": self._target_ra,
@@ -216,17 +257,20 @@ class ConeQuery:
 			"theta_deg": self._theta_deg,
 			"near_radius": self._near_radius,
 			"far_radius": self._far_radius,
-			"min_apparent_magnitude": self._min_apparent_magnitude
+			"min_apparent_magnitude": self._min_apparent_magnitude,
+			"max_apparent_magnitude": self._max_apparent_magnitude,
 		})
 		
 class StarData:
+	var source_id: int
 	var ra: float
 	var dec: float
 	var apparent_magnitude: float
 	var dist_pc: float
 	var temperature: float
 
-	func _init(_ra: float, _dec: float, _apparent_magnitude: float, _dist_pc: float, _temperature: float):
+	func _init(_source_id: int, _ra: float, _dec: float, _apparent_magnitude: float, _dist_pc: float, _temperature: float):
+		self.source_id = _source_id
 		self.ra = _ra
 		self.dec = _dec
 		self.apparent_magnitude = _apparent_magnitude
