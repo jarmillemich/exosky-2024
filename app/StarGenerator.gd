@@ -40,42 +40,6 @@ func _set_generate_at_origin(value):
 	generate_at_origin = value
 	_regenerate = true
 
-
-# class RangeF:
-# 	var min: float
-# 	var max: float
-
-# 	func _init(min: float, max: float):
-# 		self.min = min
-# 		self.max = max
-
-# 	func sample(value: float):
-# 		return (max - min) * value + min
-
-
-# class StarClass:
-# 	#var weight: int
-# 	#var stellar_class: String
-# 	var temperature: float
-# 	var luminosity: float
-# 	var name: String 
-# 	var description: String
-# 	#var mass_range: RangeF
-
-# 	func _init(dict: Dictionary):
-# 		self.temperature = dict.temp_range
-# 		self.luminosity = dict.luminosity
-# 		self.name = dict.name
-# 		self.description = dict.ddescriptionesc
-
-
-# 	func get_star(position: Vector3, value: float):
-# 		var p = self.sample(value)
-# 		# B and O-class stars are obscenely bright, so spawn them further away than other stars.
-# 		# position *= max(1.0, p.luminosity / 400)
-# 		return Star.new(position, p.luminosity, p.temp,'','')
-
-
 var generated_stars: Array[Star] = []
 static var staged_stars: Array[ApiHelper.StarData] = []
 
