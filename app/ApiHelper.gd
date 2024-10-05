@@ -8,12 +8,21 @@ func _ready():
 
 func TestEarthQuery():
 	var query = """
-		select top 5 ra, dec, phot_g_mean_mag
+		select top 5 ra, dec, phot_g_mean_mag, distance_gspphot, teff_gspphot
 		from gaiadr3.gaia_source
 		where phot_g_mean_mag < 6.5
+		  and distance_gspphot is not null
 	"""
 
 	run_query(query)
+
+	#_load_builtin_starmap("test_earth_small")
+
+func TargettedQuery(target: Target):
+	# NB we'll just be emitting the stars as we get them, caller is responsible for aggregating
+	for distance in range(100, 1000, 100):
+		var cone_query = target.make_query_step(distance).make_cone_query()
+		run_query(cone_query)
 
 func run_query(query: String):
 	var format_re = RegEx.new()
@@ -41,26 +50,36 @@ func run_query(query: String):
 	if error != OK:
 		print("Error: ", error)
 
-func _on_req_complete(result, response_code, headers, body):
-	print("Things happened: ", response_code)
-	print(body.get_string_from_utf8())
+func _on_req_complete(_result, _response_code, _headers, body):
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	_parse_and_emit_starmap(json)
+	
 
+func _load_builtin_starmap(filename: String):
+	var starmap: JSON = load("res://data/builtin_starmaps/" + filename + ".json")
+	# NB on load the JSON data IS inside another "data" entry, this isn't a mistake
+	_parse_and_emit_starmap(starmap["data"])
+
+func _parse_and_emit_starmap(json):
 	# TODO Gather our star data and emit it
 	var stars: Array[StarData] = []
 
-	var data = JSON.parse_string(body.get_string_from_utf8())["data"]
+	var data = json["data"]
 
 	for row in data:
 		# Data is returned as arrays of values, these must match the select column output order
 		var ra = row[0]
 		var dec = row[1]
 		var apparent_magnitude = row[2]
+		var distance_pc = row[3]
+		var temperature = row[4]
 
-		stars.append(StarData.new(ra, dec, apparent_magnitude))
+		# print("Star %f %f %f" % [ra, dec, apparent_magnitude])
+
+		stars.append(StarData.new(ra, dec, apparent_magnitude, distance_pc, temperature))
 
 	#emit_signal("populate_stars", stars)
 	populate_stars.emit(stars)
-
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -82,14 +101,33 @@ class Math:
 
 
 class Target:
-	var _ra: float
-	var _dec: float
-	var _distance: float
+	var ra: float
+	var dec: float
+	var dist_pc: float
 
-	func _init(ra: float, dec: float, distance: float):
-		self._ra = ra
-		self._dec = dec
-		self._distance = distance
+	func _init(_ra: float, _dec: float, _dist_pc: float):
+		self.ra = _ra
+		self.dec = _dec
+		self.dist_pc = _dist_pc
+
+	## Return the unit direction vector of the star
+	func get_unit_direction():
+		# TODO verify this is correct
+		return Vector3(
+			cos(self.ra) * cos(self.dec),
+			sin(self.ra) * cos(self.dec),
+			sin(self.dec)
+		)
+
+	## Return the inertial coordinates of the star in light years, relative to Earth.
+	## Subtract these from your target exoplant coordinates to get the relative position.
+	func get_inertial_coordinates_ly():
+		var direction = get_unit_direction()
+
+		# Conversion factor from https://en.wikipedia.org/wiki/Parsec
+		var dist_ly = self.dist_pc * 3.261563777
+
+		return direction * dist_ly
 
 	func make_query_step(radius: float, min_magnitude_at_target: float = 6.5):
 		var near_radius = self._distance - radius
@@ -150,12 +188,17 @@ class StarData:
 	var ra: float
 	var dec: float
 	var apparent_magnitude: float
+	var dist_pc: float
+	var temperature: float
 
-	func _init(_ra: float, _dec: float, _apparent_magnitude: float):
+	func _init(_ra: float, _dec: float, _apparent_magnitude: float, _dist_pc: float, _temperature: float):
 		self.ra = _ra
 		self.dec = _dec
 		self.apparent_magnitude = _apparent_magnitude
+		self.dist_pc = _dist_pc
+		self.temperature = _temperature
 
+	## Return the unit direction vector of the star
 	func get_unit_direction():
 		# TODO verify this is correct
 		return Vector3(
@@ -163,3 +206,20 @@ class StarData:
 			sin(self.ra) * cos(self.dec),
 			sin(self.dec)
 		)
+
+	## Return the inertial coordinates of the star in light years, relative to Earth.
+	## Subtract your target exoplant coordinates from this to get the relative position.
+	func get_inertial_coordinates_ly():
+		var direction = get_unit_direction()
+
+		# Conversion factor from https://en.wikipedia.org/wiki/Parsec
+		var dist_ly = self.dist_pc * 3.261563777
+
+		return direction * dist_ly
+
+	## Return the luminosity of the star relative to Sol
+	func get_relative_luminosity():
+		# https://en.wikipedia.org/wiki/Luminosity
+		# TODO
+		return 1
+
