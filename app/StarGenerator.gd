@@ -91,6 +91,8 @@ func _process(delta):
 			#print('Loop')
 			var star = Star.new(i.get_inertial_coordinates_ly(), i.get_relative_luminosity(), i.temperature, '', '')
 			stars.push_back(star)
+
+			make_click_collider(i)
 		
 		staged_stars = []	
 		set_stars(stars)
@@ -98,7 +100,17 @@ func _process(delta):
 		#print('No results')
 	super._process(delta)
 
+func make_click_collider(star: ApiHelper.StarData):
+	print("Adding %s" % star.apparent_magnitude)
 
+	var clicker_position = star.get_unit_direction() * 10
+
+	const Dbg = preload("res://dbg.tscn")
+	var instance = Dbg.instantiate()
+	instance.position = clicker_position
+	add_child(instance)
+
+	instance.look_at(Vector3.ZERO, Vector3.FORWARD)
 
 # class StarClass:
 # 	var weight: int
@@ -121,7 +133,7 @@ func _process(delta):
 # 			luminosity = luminosity_range.sample(value),
 # 			mass = mass_range.sample(value),
 # 		}
-
+ 
 # 	func get_star(position: Vector3, value: float):
 # 		var p = self.sample(value)
 # 		# B and O-class stars are obscenely bright, so spawn them further away than other stars.

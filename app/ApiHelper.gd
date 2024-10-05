@@ -13,7 +13,7 @@ func _ready():
 
 func TestEarthQuery():
 	var query = """
-		select top 5 ra, dec, phot_g_mean_mag, distance_gspphot, teff_gspphot
+		select top 5 ra, dec, phot_g_mean_mag, distance_gspphot, teff_gspphot, source_id
 		from gaiadr3.gaia_source
 		where phot_g_mean_mag < 6.5
 		  and distance_gspphot is not null

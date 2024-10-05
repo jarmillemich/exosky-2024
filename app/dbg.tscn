@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://7eb6ue3v3edv"]
+
+[ext_resource type="Script" path="res://dbg.gd" id="1_qt1gb"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_omhx1"]
+size = Vector2(256, 256)
+
+[node name="Dbg" type="Node3D"]
+script = ExtResource("1_qt1gb")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+visible = false
+texture = SubResource("PlaceholderTexture2D_omhx1")
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionPolygon3D" type="CollisionPolygon3D" parent="Area3D"]
+polygon = PackedVector2Array(-1, 1, 1, 1, 1, -1, -1, -1)
