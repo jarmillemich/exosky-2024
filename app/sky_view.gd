@@ -14,6 +14,8 @@ func _ready():
 
 func _on_populate_stars(stars: Array[ApiHelper.StarData]):
 	print("Got a bunch of stars %d" % stars.size())
+	
+	
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

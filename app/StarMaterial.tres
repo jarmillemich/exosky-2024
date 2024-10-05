@@ -1,0 +1,20 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://ivfsaea8ves6"]
+
+[ext_resource type="Shader" path="res://Star.gdshader" id="1_8weqq"]
+[ext_resource type="Texture2D" uid="uid://bb4ekiiom5udr" path="res://jwst.exr" id="2_cs6bo"]
+
+[resource]
+render_priority = -128
+shader = ExtResource("1_8weqq")
+shader_parameter/emission_energy = 2e+09
+shader_parameter/billboard_size_deg = 60.0
+shader_parameter/luminosity_cap = 9.22337e+18
+shader_parameter/meters_per_lightyear = 100.0
+shader_parameter/color_gamma = 1.0
+shader_parameter/clamp_output = false
+shader_parameter/camera_vertical_fov = 70.0
+shader_parameter/min_size_ratio = 0.05
+shader_parameter/max_luminosity = 1000.0
+shader_parameter/scaling_gamma = 1.0
+shader_parameter/debug_show_rects = false
+shader_parameter/texture_emission = ExtResource("2_cs6bo")

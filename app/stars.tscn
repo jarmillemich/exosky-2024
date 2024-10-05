@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://dfm5v8wkcx6di"]
+
+[ext_resource type="Script" path="res://StarManager.gd" id="1_sower"]
+[ext_resource type="Shader" path="res://Star.gdshader" id="2_vrlou"]
+
+[node name="Stars" type="Node3D"]
+script = ExtResource("1_sower")
+shader = ExtResource("2_vrlou")
