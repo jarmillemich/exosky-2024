@@ -15,6 +15,7 @@ sky_material = SubResource("ProceduralSkyMaterial_hhpwf")
 background_mode = 2
 sky = SubResource("Sky_ekeqx")
 tonemap_mode = 2
+fog_enabled = true
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_a3q2c"]
 size = Vector2(256, 256)
@@ -31,6 +32,7 @@ texture = SubResource("PlaceholderTexture2D_a3q2c")
 
 [node name="Sprite3D2" type="Sprite3D" parent="."]
 transform = Transform3D(0.240923, 0, -0.970544, 0, 1, 0, 0.970544, 0, 0.240923, 12.8923, 0, -1.30349)
+modulate = Color(0.0293686, 0.124912, 0.155916, 1)
 texture = SubResource("PlaceholderTexture2D_a3q2c")
 
 [node name="Sprite3D3" type="Sprite3D" parent="."]
