@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://crbad0h6v8y38"]
+[gd_scene load_steps=9 format=3 uid="uid://crbad0h6v8y38"]
 
 [ext_resource type="Script" path="res://sky_view.gd" id="1_4uy5n"]
 [ext_resource type="PackedScene" uid="uid://dfm5v8wkcx6di" path="res://stars.tscn" id="2_m1nqp"]
 [ext_resource type="Script" path="res://StarGenerator.gd" id="3_b4213"]
 [ext_resource type="Texture2D" uid="uid://bb4ekiiom5udr" path="res://jwst.exr" id="4_5lvo6"]
+[ext_resource type="Script" path="res://CameraSpinner.gd" id="5_mi6cd"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_hhpwf"]
 sky_horizon_color = Color(0.59625, 0.6135, 0.6375, 1)
@@ -27,8 +28,8 @@ environment = SubResource("Environment_lampj")
 
 [node name="Stars" parent="." instance=ExtResource("2_m1nqp")]
 script = ExtResource("3_b4213")
-size = 1000.0
-star_count = 10000
+size = 10.0
+star_count = 1000
 rng_seed = 1234
 generate_at_origin = true
 shader_params/emission_energy = 5e+08
@@ -45,5 +46,6 @@ shader_params/texture_emission = ExtResource("4_5lvo6")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.864266, 0, -0.503035, 0, 1, 0, 0.503035, 0, 0.864266, 0, 0, 0)
+script = ExtResource("5_mi6cd")
 
 [node name="HTTPRequest" type="HTTPRequest" parent="."]

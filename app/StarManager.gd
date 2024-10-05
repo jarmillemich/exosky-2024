@@ -176,8 +176,9 @@ func _init():
 func set_stars(stars: Array[Star]):
 	mesh.instance_count = 0
 	mesh.instance_count = stars.size()
-	
+	print("Set stars")
 	for i in range(stars.size()):
+		print(i)
 		var star = stars[i]
 		var transform = Transform3D().translated(star.position)
 		mesh.set_instance_transform(i, transform)

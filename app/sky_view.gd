@@ -2,6 +2,7 @@ extends Node3D
 # Obviously all this needs to be externalized somehow?
 
 const ApiHelper = preload("res://ApiHelper.gd")
+const StarGenerator = preload("res://StarGenerator.gd")
 
 
 # Called when the node enters the scene tree for the first time.
@@ -14,11 +15,11 @@ func _ready():
 
 func _on_populate_stars(stars: Array[ApiHelper.StarData]):
 	print("Got a bunch of stars %d" % stars.size())
+	if(stars.size() > 0 ):
+		StarGenerator.gatherStars(stars)
 	
 	
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
-
-
