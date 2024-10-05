@@ -28,6 +28,7 @@ script = ExtResource("1_4uy5n")
 environment = SubResource("Environment_lampj")
 
 [node name="Stars" parent="." instance=ExtResource("2_m1nqp")]
+transform = Transform3D(-0.878817, -0.477159, 0, 0.477159, -0.878817, 0, 0, 0, 1, 0, 0, 0)
 script = ExtResource("3_b4213")
 size = 10.0
 star_count = 1000
@@ -36,7 +37,7 @@ generate_at_origin = true
 shader_params/emission_energy = 5e+08
 shader_params/billboard_size_deg = 90.0
 shader_params/luminosity_cap = 4e+06
-shader_params/meters_per_lightyear = 100.0
+shader_params/meters_per_lightyear = 1.0
 shader_params/color_gamma = 4.0
 shader_params/clamp_output = true
 shader_params/min_size_ratio = 0.003
@@ -46,7 +47,8 @@ shader_params/debug_show_rects = false
 shader_params/texture_emission = ExtResource("4_5lvo6")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.864266, 0, -0.503035, 0, 1, 0, 0.503035, 0, 0.864266, 0, 0, 0)
+transform = Transform3D(0.864275, 0, -0.50302, 0, 1, 0, 0.50302, 0, 0.864275, 0, 0, 0)
+current = true
 script = ExtResource("5_mi6cd")
 
 [node name="HTTPRequest" type="HTTPRequest" parent="."]

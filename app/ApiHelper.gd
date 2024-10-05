@@ -1,5 +1,7 @@
 extends Node
 
+# The api part of the project called "To 
+
 signal populate_stars_inner(stars: Array[StarData])
 signal populate_stars(stars: Array[StarData])
 
@@ -13,10 +15,10 @@ func _ready():
 
 func TestEarthQuery():
 	var query = """
-		select top 5000 ra, dec, phot_g_mean_mag, distance_gspphot, teff_gspphot, source_id
+		select top 5000 ra, dec, phot_g_mean_mag, r_med_photogeo, teff_gspphot, source_id
 		from gaiadr3.gaia_source
+		left join external.gaiaedr3_distance using (source_id)
 		where phot_g_mean_mag < 5.0
-		  and distance_gspphot is not null
 	"""
 
 	run_query(query)
@@ -51,6 +53,7 @@ func TargettedQuery(target: Target):
 				bucket.append(star)
 			
 			seen_stars[star.source_id] = star
+			star.origin = target.get_inertial_coordinates_ly()
 		
 		populate_stars.emit(bucket)
 
@@ -133,8 +136,8 @@ func _parse_and_emit_starmap(json):
 		var ra = row[0]
 		var dec = row[1]
 		var apparent_magnitude = row[2]
-		var distance_pc = row[3]
-		var temperature = row[4]
+		var distance_pc = row[3] if row[3] != null else 100.0
+		var temperature = row[4] if row[4] != null else 5000.0
 		var source_id = row[5]
 
 		# print("Star %f %f %f" % [ra, dec, apparent_magnitude])
@@ -161,6 +164,16 @@ class Math:
 	static func apparent_to_abs_magnitude(app_mag: float, distance: float):
 		# https://en.wikipedia.org/wiki/Absolute_magnitude#Apparent_magnitude
 		return app_mag - 5 * log10(distance) + 5
+
+	static func get_unit_direction(ra_deg: float, dec_deg: float):
+		var ra_rad = ra_deg * PI / 180
+		var dec_rad = dec_deg * PI / 180
+
+		return Vector3(
+			cos(ra_rad) * cos(dec_rad),
+			sin(ra_rad) * cos(dec_rad),
+			sin(dec_rad)
+		)
 
 
 class Target:
@@ -247,12 +260,12 @@ class ConeQuery:
 
 	func make_cone_query():
 		return """
-			select top 10000 ra, dec, phot_g_mean_mag, distance_gspphot, teff_gspphot, source_id
+			select top 10000 ra, dec, phot_g_mean_mag, r_med_photogeo, teff_gspphot, source_id
 			from gaiadr3.gaia_source
+			left join external.gaiaedr3_distance using (source_id)
 			where distance({target_ra}, {target_dec}, ra, dec) < {theta_deg}
 			and distance_gspphot between {near_radius} and {far_radius}
 			and phot_g_mean_mag between {max_apparent_magnitude} and {min_apparent_magnitude}
-			and distance_gspphot is not null
 		""".format({
 			"target_ra": self._target_ra,
 			"target_dec": self._target_dec,
@@ -270,6 +283,7 @@ class StarData:
 	var apparent_magnitude: float
 	var dist_pc: float
 	var temperature: float
+	var origin: Vector3 = Vector3.ZERO
 
 	func _init(_source_id: int, _ra: float, _dec: float, _apparent_magnitude: float, _dist_pc: float, _temperature: float):
 		self.source_id = _source_id
@@ -280,7 +294,7 @@ class StarData:
 		self.temperature = _temperature
 
 	## Return the unit direction vector of the star
-	func get_unit_direction():
+	func get_unit_direction_raw():
 		var ra_rad = self.ra * PI / 180
 		var dec_rad = self.dec * PI / 180
 
@@ -290,15 +304,18 @@ class StarData:
 			sin(dec_rad)
 		)
 
+	func get_unit_direction():
+		return get_inertial_coordinates_ly().normalized()
+
 	## Return the inertial coordinates of the star in light years, relative to Earth.
 	## Subtract your target exoplant coordinates from this to get the relative position.
 	func get_inertial_coordinates_ly():
-		var direction = get_unit_direction()
+		var direction = get_unit_direction_raw()
 
 		# Conversion factor from https://en.wikipedia.org/wiki/Parsec
 		var dist_ly = self.dist_pc * 3.261563777
 
-		return direction * dist_ly
+		return direction * dist_ly - origin
 
 	## Return the luminosity of the star relative to Sol
 	func get_relative_luminosity():

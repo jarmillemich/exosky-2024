@@ -57,7 +57,7 @@ func _process(delta):
 		print(staged_stars.size())
 		for i in staged_stars:
 			## NB The star renderer has a 100u:1ly scale
-			var star = Star.new(i.get_inertial_coordinates_ly() * 100.0, i.get_relative_luminosity(), i.temperature, '', '')
+			var star = Star.new(i.get_inertial_coordinates_ly() * 1.0, i.get_relative_luminosity(), i.temperature, '', '')
 			stars.push_back(star)
 
 			make_click_collider(i)
@@ -69,7 +69,6 @@ func _process(delta):
 	super._process(delta)
 
 func make_click_collider(star: ApiHelper.StarData):
-	print("Adding %s" % star.apparent_magnitude)
 
 	var clicker_position = star.get_unit_direction() * 10
 

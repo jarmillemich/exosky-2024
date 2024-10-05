@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://dfm5v8wkcx6di"]
+[gd_scene load_steps=3 format=3 uid="uid://cqmm2karurty0"]
 
 [ext_resource type="Script" path="res://StarManager.gd" id="1_sower"]
 [ext_resource type="Shader" path="res://Star.gdshader" id="2_vrlou"]
