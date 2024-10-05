@@ -13,6 +13,10 @@ const ApiHelper = preload("res://ApiHelper.gd")
 ## If set to true, a Sol-like star will be placed at 0,0,0.
 @export var generate_at_origin: bool = false: set = _set_generate_at_origin
 
+signal star_enter(star: ApiHelper.StarData)
+signal star_exit(star: ApiHelper.StarData)
+signal star_click(star: ApiHelper.StarData)
+
 
 var _regenerate = true
 
@@ -88,8 +92,8 @@ func _process(delta):
 		
 		print(staged_stars.size())
 		for i in staged_stars:
-			#print('Loop')
-			var star = Star.new(i.get_inertial_coordinates_ly(), i.get_relative_luminosity(), i.temperature, '', '')
+			## NB The star renderer has a 100u:1ly scale
+			var star = Star.new(i.get_inertial_coordinates_ly() * 100.0, i.get_relative_luminosity(), i.temperature, '', '')
 			stars.push_back(star)
 
 			make_click_collider(i)
@@ -108,9 +112,14 @@ func make_click_collider(star: ApiHelper.StarData):
 	const Dbg = preload("res://dbg.tscn")
 	var instance = Dbg.instantiate()
 	instance.position = clicker_position
+	instance.star = star
 	add_child(instance)
 
 	instance.look_at(Vector3.ZERO, Vector3.FORWARD)
+
+	instance.star_enter.connect(star_enter.emit)
+	instance.star_exit.connect(star_exit.emit)
+	instance.star_click.connect(star_click.emit)
 
 # class StarClass:
 # 	var weight: int

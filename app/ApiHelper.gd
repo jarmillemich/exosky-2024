@@ -13,9 +13,9 @@ func _ready():
 
 func TestEarthQuery():
 	var query = """
-		select top 5 ra, dec, phot_g_mean_mag, distance_gspphot, teff_gspphot, source_id
+		select top 5000 ra, dec, phot_g_mean_mag, distance_gspphot, teff_gspphot, source_id
 		from gaiadr3.gaia_source
-		where phot_g_mean_mag < 6.5
+		where phot_g_mean_mag < 5.0
 		  and distance_gspphot is not null
 	"""
 
@@ -175,11 +175,13 @@ class Target:
 
 	## Return the unit direction vector of the star
 	func get_unit_direction():
-		# TODO verify this is correct
+		var ra_rad = self.ra * PI / 180
+		var dec_rad = self.dec * PI / 180
+
 		return Vector3(
-			cos(self.ra) * cos(self.dec),
-			sin(self.ra) * cos(self.dec),
-			sin(self.dec)
+			cos(ra_rad) * cos(dec_rad),
+			sin(ra_rad) * cos(dec_rad),
+			sin(dec_rad)
 		)
 
 	## Return the inertial coordinates of the star in light years, relative to Earth.
@@ -279,11 +281,13 @@ class StarData:
 
 	## Return the unit direction vector of the star
 	func get_unit_direction():
-		# TODO verify this is correct
+		var ra_rad = self.ra * PI / 180
+		var dec_rad = self.dec * PI / 180
+
 		return Vector3(
-			cos(self.ra) * cos(self.dec),
-			sin(self.ra) * cos(self.dec),
-			sin(self.dec)
+			cos(ra_rad) * cos(dec_rad),
+			sin(ra_rad) * cos(dec_rad),
+			sin(dec_rad)
 		)
 
 	## Return the inertial coordinates of the star in light years, relative to Earth.
@@ -298,6 +302,13 @@ class StarData:
 
 	## Return the luminosity of the star relative to Sol
 	func get_relative_luminosity():
-		# https://en.wikipedia.org/wiki/Luminosity
+		
 		# TODO
-		return 1
+		# https://en.wikipedia.org/wiki/Sun
+		const SOL_ABSOLUTE_MAGNITUDE = 4.83
+
+		# https://en.wikipedia.org/wiki/Luminosity
+		var absolute_magnitude = Math.apparent_to_abs_magnitude(self.apparent_magnitude, self.dist_pc)
+		var relative_luminosity = 10 ** ((absolute_magnitude - SOL_ABSOLUTE_MAGNITUDE) / -2.5)
+		#print("%fm %fM at %f pc is lumin ratio %f" % [self.apparent_magnitude, absolute_magnitude, self.dist_pc, relative_luminosity])
+		return relative_luminosity

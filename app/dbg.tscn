@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://7eb6ue3v3edv"]
+[gd_scene load_steps=3 format=3 uid="uid://y5po3w6u60bf"]
 
 [ext_resource type="Script" path="res://dbg.gd" id="1_qt1gb"]
 
@@ -6,6 +6,7 @@
 size = Vector2(256, 256)
 
 [node name="Dbg" type="Node3D"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
 script = ExtResource("1_qt1gb")
 
 [node name="Sprite3D" type="Sprite3D" parent="."]

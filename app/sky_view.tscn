@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=3 uid="uid://crbad0h6v8y38"]
 
 [ext_resource type="Script" path="res://sky_view.gd" id="1_4uy5n"]
-[ext_resource type="PackedScene" uid="uid://dfm5v8wkcx6di" path="res://stars.tscn" id="2_m1nqp"]
+[ext_resource type="PackedScene" path="res://stars.tscn" id="2_m1nqp"]
 [ext_resource type="Script" path="res://StarGenerator.gd" id="3_b4213"]
 [ext_resource type="Texture2D" uid="uid://bb4ekiiom5udr" path="res://jwst.exr" id="4_5lvo6"]
 [ext_resource type="Script" path="res://CameraSpinner.gd" id="5_mi6cd"]
@@ -51,7 +51,13 @@ script = ExtResource("5_mi6cd")
 
 [node name="HTTPRequest" type="HTTPRequest" parent="."]
 
-[node name="Label" type="Label" parent="."]
+[node name="FpsLabel" type="Label" parent="."]
 offset_right = 40.0
 offset_bottom = 23.0
 script = ExtResource("6_52xw8")
+
+[node name="StarLabel" type="Label" parent="."]
+offset_left = 893.0
+offset_top = 42.0
+offset_right = 1126.0
+offset_bottom = 142.0
