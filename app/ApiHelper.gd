@@ -2,6 +2,10 @@ extends Node
 
 signal populate_stars(stars: Array[StarData])
 
+# XXX Assuming things about threading...
+var running_query = false
+var query_queue = []
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var some_target: Target = Target.new(195.0149029, 12.6823534, 600)
@@ -20,11 +24,18 @@ func TestEarthQuery():
 
 func TargettedQuery(target: Target):
 	# NB we'll just be emitting the stars as we get them, caller is responsible for aggregating
-	for distance in range(100, 1000, 100):
-		var cone_query = target.make_query_step(distance).make_cone_query()
+	for distance in range(100, target.dist_pc, 100):
+		var step = target.make_query_step(distance)
+		var cone_query = step.make_cone_query()
+		print("My query is %s" % cone_query)
 		run_query(cone_query)
 
 func run_query(query: String):
+	if running_query:
+		query_queue.append(query)
+	else:
+		running_query = true
+
 	var format_re = RegEx.new()
 	format_re.compile("\\s+")
 	var query_formatted = format_re.sub(query, " ", true).strip_edges()
@@ -50,8 +61,25 @@ func run_query(query: String):
 	if error != OK:
 		print("Error: ", error)
 
-func _on_req_complete(_result, _response_code, _headers, body):
-	var json = JSON.parse_string(body.get_string_from_utf8())
+func _on_req_complete(result, _response_code, _headers, body):
+	running_query = false
+	
+	# Maybe queue another
+	if query_queue.size() > 0:
+		var next_query = query_queue.pop_front()
+		run_query(next_query)
+
+	if result != HTTPRequest.RESULT_SUCCESS:
+		print("Failed to load data from server: %d" % result)
+		return
+	
+	var res = body.get_string_from_utf8()
+	print("Parse this stuff %d" % _response_code)
+
+	
+
+	print(res)
+	var json = JSON.parse_string(res)
 	_parse_and_emit_starmap(json)
 	
 
@@ -129,26 +157,32 @@ class Target:
 
 		return direction * dist_ly
 
-	func make_query_step(radius: float, min_magnitude_at_target: float = 6.5):
-		var near_radius = self._distance - radius
-		var far_radius = self._distance + radius
+	func make_query_step(radius_pc: float, min_magnitude_at_target: float = 6.5):
+		var near_radius = self.dist_pc - radius_pc
+		var far_radius = self.dist_pc + radius_pc
 
 		# Law of cosines
-		var r = radius
-		var d = self._distance
+		var r = radius_pc
+		var d = self.dist_pc
 		var o = sqrt(d ** 2 - r ** 2)
-		var num = o && 2 + d ** 2 - r ** 2
+		var num = o ** 2 + d ** 2 - r ** 2
 		var den = 2 * d * o
 		var cos_half_theta = num / den
 		var theta_deg = 2 * acos(cos_half_theta) * 180 / PI
 
+		# print({
+		# 	"near_radius": near_radius,
+		# 	"far_radius": far_radius,
+		# 	"theta_deg": theta_deg,
+		# })
+
 		# How bright we'd have to be at the far edge of the radius
-		var min_absolute_magnititude_at_target = Math.apparent_to_abs_magnitude(min_magnitude_at_target, self._distance)
+		var min_absolute_magnititude_at_target = Math.apparent_to_abs_magnitude(min_magnitude_at_target, self.dist_pc)
 
 		# How apparently bright we'd have to be rom Sol, which is what the dataset has
-		var min_apparent_magnitude_from_source = Math.abs_to_apparent_magnitude(min_absolute_magnititude_at_target, self._distance)
+		var min_apparent_magnitude_from_source = Math.abs_to_apparent_magnitude(min_absolute_magnititude_at_target, far_radius)
 
-		return ConeQuery.new(self._ra, self._dec, theta_deg, near_radius, far_radius, min_apparent_magnitude_from_source)
+		return ConeQuery.new(self.ra, self.dec, theta_deg, near_radius, far_radius, min_apparent_magnitude_from_source)
 
 	
 
@@ -170,19 +204,20 @@ class ConeQuery:
 
 	func make_cone_query():
 		return """
-			select count(*)
+			select top 200 ra, dec, phot_g_mean_mag, distance_gspphot, teff_gspphot
 			from gaiadr3.gaia_source
 			where distance({target_ra}, {target_dec}, ra, dec) < {theta_deg}
 			and distance_gspphot between {near_radius} and {far_radius}
 			and phot_g_mean_mag < {min_apparent_magnitude}
-		""" % {
+			and distance_gspphot is not null
+		""".format({
 			"target_ra": self._target_ra,
 			"target_dec": self._target_dec,
 			"theta_deg": self._theta_deg,
 			"near_radius": self._near_radius,
 			"far_radius": self._far_radius,
 			"min_apparent_magnitude": self._min_apparent_magnitude
-		}
+		})
 		
 class StarData:
 	var ra: float
@@ -222,4 +257,3 @@ class StarData:
 		# https://en.wikipedia.org/wiki/Luminosity
 		# TODO
 		return 1
-

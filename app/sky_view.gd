@@ -9,7 +9,11 @@ const StarGenerator = preload("res://StarGenerator.gd")
 func _ready():
 	var api_helper = ApiHelper.new()
 	add_child(api_helper)
-	api_helper.TestEarthQuery()
+	#api_helper.TestEarthQuery()
+
+	# Test with Lich
+	var my_target = ApiHelper.Target.new(195.0149029, 12.6823534, 600)
+	api_helper.TargettedQuery(my_target)
 
 	api_helper.populate_stars.connect(_on_populate_stars)
 
