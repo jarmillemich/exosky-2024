@@ -145,8 +145,9 @@ func load_builtin_starmap(origin: Target, filename: String):
 
 	print("Got inner stars %d" % stars.size())
 
-	for star in stars:
-		star.origin = origin.get_inertial_coordinates_ly()
+	if origin != null:
+		for star in stars:
+			star.origin = origin.get_inertial_coordinates_ly()
 
 	populate_stars.emit(stars)
 
