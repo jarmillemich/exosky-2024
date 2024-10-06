@@ -9,8 +9,6 @@ var api_helper = ApiHelper.new()
 func _ready():
 	print("We are %s" % OS.get_name())
 
-	call_deferred("_init_mouse_line")
-	mouse_line = await Draw3D.line(Vector3.ZERO, Vector3.ZERO, Color.WHITE)
 	add_child(api_helper)
 
 	# Test with HD 1690
@@ -53,7 +51,7 @@ func _input(event: InputEvent):
 # 	var hour = 15.0
 # 	var minute = hour / 60.0
 # 	var second = minute / 60.0
-# 	var points = [
+# 	var lines = [
 # 		# Libra first
 # 		# 15h 05m29.9s   -25°22'42.8"
 # 		# 14h 52m13.7s   -16°08'36.2"
@@ -88,9 +86,9 @@ func _input(event: InputEvent):
 
 # 	]
 
-# 	print(points)
+# 	print(lines)
 
-# 	for point in points:
+# 	for point in lines:
 # 		var unit = ApiHelper.Math.get_unit_direction(point[0], point[1])
 # 		var dist = 20
 
@@ -112,12 +110,9 @@ func _on_populate_stars(stars: Array[ApiHelper.StarData]):
 #func _on_star_enter(star: ApiHelper.StarData):
 	#$StarLabel.text = "%f %f" % [star.ra, star.dec]
 
-var points:Array
-var lines:Array
+var points:Array[Vector3] = []
+var lines:Array = []
 var mouse_line: MeshInstance3D
-
-func _init_mouse_line():
-	mouse_line = await Draw3D.line(Vector3.ZERO, Vector3.ZERO, Color.WHITE)
 
 func _on_star_click(star: ApiHelper.StarData):
 	$StarLabel.text = "%f %f" % [star.ra, star.dec]
@@ -126,24 +121,41 @@ func _on_star_click(star: ApiHelper.StarData):
 func _draw_point_and_line(star: ApiHelper.StarData):
 	print(newConstellation)
 	var t = star.get_unit_direction() * 100
-	points.append(await Draw3D.point(t,0.05))
+	points.append(t)
 	
-	#If there are at least 2 points...
+	#If there are at least 2 lines...
 	if points.size() > 1 && newConstellation == false:
 		#Draw a line from the position of the last point placed to the position of the second to last point placed
 		var point1 = points[points.size()-1]
 		var point2 = points[points.size()-2]
-		var line = await Draw3D.line(point1.position, point2.position)
-		lines.append(line)
+		
+		# Just render flat white
+		var material = ORMMaterial3D.new()
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		material.albedo_color = Color.WHITE_SMOKE
+
+		# Generate the mesh for display
+		var line_mesh = ImmediateMesh.new()
+		line_mesh.surface_begin(Mesh.PRIMITIVE_LINES, material)
+		line_mesh.surface_add_vertex(point1)
+		line_mesh.surface_add_vertex(point2)
+		line_mesh.surface_end()
+
+		# Wrap in a mesh instance
+		var line_instance = MeshInstance3D.new()
+		line_instance.mesh = line_mesh
+		
+
+		add_child(line_instance)
+		
+		lines.append(line_instance)
 
 	newConstellation = false
 
 func _clear_points_and_lines():
-	for p in points:
-		p.queue_free()
-	points.clear()
-		
 	for l in lines:
 		l.queue_free()
+	points.clear()
 	lines.clear()
+		
 	newConstellation = true
