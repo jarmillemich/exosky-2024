@@ -140,7 +140,6 @@ func load_builtin_starmap(filename: String):
 	_parse_and_emit_starmap(starmap["data"])
 
 func _parse_and_emit_starmap(json):
-	# TODO Gather our star data and emit it
 	var stars: Array[StarData] = []
 
 	var data = json["data"]
@@ -158,8 +157,8 @@ func _parse_and_emit_starmap(json):
 
 		stars.append(StarData.new(source_id, ra, dec, apparent_magnitude, distance_pc, temperature))
 
-	#emit_signal("populate_stars", stars)
-	populate_stars_inner.emit(stars)
+	emit_signal("populate_stars", stars)
+	#populate_stars_inner.emit(stars)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
