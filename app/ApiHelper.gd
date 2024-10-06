@@ -59,6 +59,18 @@ func TargettedQuery(target: Target):
 		
 		populate_stars.emit(bucket)
 
+	seen_stars.erase(0)
+
+	# Write a file
+	if OS.get_name() != "Web":
+		print("Saving current starmap")
+		var file = FileAccess.open("user://starmap.json", FileAccess.WRITE)
+		var srlz = []
+		for star in seen_stars.values():
+			srlz.append(star.to_dict())
+		file.store_string(JSON.stringify({ "data": srlz }))
+		file.close()
+
 	# Emit the sources all at once
 	print("Finished loading")
 	#populate_stars.emit(seen_stars.values())
@@ -122,7 +134,7 @@ func run_query(query: String):
 	_parse_and_emit_starmap(json)
 	
 
-func _load_builtin_starmap(filename: String):
+func load_builtin_starmap(filename: String):
 	var starmap: JSON = load("res://data/builtin_starmaps/" + filename + ".json")
 	# NB on load the JSON data IS inside another "data" entry, this isn't a mistake
 	_parse_and_emit_starmap(starmap["data"])
@@ -294,6 +306,16 @@ class StarData:
 		self.apparent_magnitude = _apparent_magnitude
 		self.dist_pc = _dist_pc
 		self.temperature = _temperature
+
+	func to_dict() -> Array:
+		return [
+			ra,
+			dec,
+			apparent_magnitude,
+			dist_pc,
+			temperature,
+			source_id,
+		]
 
 	## Return the unit direction vector of the star
 	func get_unit_direction_raw():

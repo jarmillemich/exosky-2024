@@ -7,6 +7,8 @@ var api_helper = ApiHelper.new()
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	print("We are %s" % OS.get_name())
+
 	call_deferred("_init_mouse_line")
 	mouse_line = await Draw3D.line(Vector3.ZERO, Vector3.ZERO, Color.WHITE)
 	add_child(api_helper)
@@ -14,9 +16,16 @@ func _ready():
 	# Test with HD 1690
 	var my_target = ApiHelper.Target.new(5.3055886, -8.2811442, 752.615)
 	# $Camera3D.position = my_target.get_inertial_coordinates_ly()
-	api_helper.TargettedQuery(my_target)
 
 	api_helper.populate_stars.connect(_on_populate_stars)
+	
+	if OS.get_name() == "Web" || true:
+		print("Loading builtin starmap for web demo")
+		api_helper.load_builtin_starmap("hd-1690")
+	else:
+		api_helper.TargettedQuery(my_target)
+
+	
 
 	#$Stars.star_enter.connect(_on_star_enter)
 	$Stars.star_click.connect(_on_star_click)
