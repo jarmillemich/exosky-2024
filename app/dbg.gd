@@ -24,7 +24,7 @@ func _mouse_exit():
 
 func _input_event(camera, event: InputEvent, event_position, normal, shape_idx):
 	if event is InputEventMouseButton:
-		if event.pressed:
+		if event.pressed && event.button_index == MOUSE_BUTTON_LEFT:
 			star_click.emit(star)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
