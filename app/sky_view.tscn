@@ -100,3 +100,25 @@ offset_left = -20.0
 offset_right = 20.0
 offset_bottom = 23.0
 grow_horizontal = 2
+
+[node name="SelectorPanel" type="Panel" parent="."]
+offset_left = 359.0
+offset_top = 184.0
+offset_right = 765.0
+offset_bottom = 408.0
+
+[node name="EarthButton" type="LinkButton" parent="SelectorPanel"]
+layout_mode = 0
+offset_left = 133.0
+offset_top = 50.0
+offset_right = 261.0
+offset_bottom = 90.0
+text = "View From Earth"
+
+[node name="HD1690Button" type="LinkButton" parent="SelectorPanel"]
+layout_mode = 0
+offset_left = 126.0
+offset_top = 128.0
+offset_right = 277.0
+offset_bottom = 168.0
+text = "View From HD 1690"

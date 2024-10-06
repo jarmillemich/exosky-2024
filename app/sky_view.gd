@@ -12,11 +12,38 @@ func _ready():
 	add_child(api_helper)
 
 	# Test with HD 1690
-	var my_target = ApiHelper.Target.new(5.3055886, -8.2811442, 752.615)
+	
 	# $Camera3D.position = my_target.get_inertial_coordinates_ly()
 
 	api_helper.populate_stars.connect(_on_populate_stars)
+
+	$SelectorPanel/EarthButton.pressed.connect(_test_earth)
+	$SelectorPanel/HD1690Button.pressed.connect(_test_hd1690)
 	
+	
+
+
+	
+
+	#$Stars.star_enter.connect(_on_star_enter)
+	$Stars.star_click.connect(_on_star_click)
+
+func _test_earth():
+	if OS.get_name() == "Web":
+		print("Loading builtin starmap for web demo")
+		api_helper.load_builtin_starmap(null, "test_earth")
+
+		# Web doesn't support exr for the textures, switch to a less good gradient
+		#$Stars.shader.texture_emission = load("res://web_stars.tres")
+	else:
+		api_helper.TestEarthQuery()
+		#$Stars.shader.texture_emission = load("res://jwst.exr")
+	$SelectorPanel.visible = false
+
+
+func _test_hd1690():
+	var my_target = ApiHelper.Target.new(5.3055886, -8.2811442, 752.615)
+
 	if OS.get_name() == "Web":
 		print("Loading builtin starmap for web demo")
 		api_helper.load_builtin_starmap(my_target, "hd-1690")
@@ -27,11 +54,7 @@ func _ready():
 		api_helper.TargettedQuery(my_target)
 		#$Stars.shader.texture_emission = load("res://jwst.exr")
 
-
-	
-
-	#$Stars.star_enter.connect(_on_star_enter)
-	$Stars.star_click.connect(_on_star_click)
+	$SelectorPanel.visible = false
 
 var newConstellation = false
 
