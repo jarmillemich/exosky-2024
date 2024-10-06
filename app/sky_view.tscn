@@ -57,7 +57,21 @@ offset_bottom = 23.0
 script = ExtResource("6_52xw8")
 
 [node name="StarLabel" type="Label" parent="."]
-offset_left = 893.0
-offset_top = 42.0
-offset_right = 1126.0
-offset_bottom = 142.0
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -233.0
+offset_bottom = 100.0
+grow_horizontal = 0
+
+[node name="Label" type="Label" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -75.0
+offset_right = 297.0
+grow_vertical = 0
+text = "Hold Right Click to move camera angle
+Left Click stars to draw constellations
+Backspace to clear ALL constellations"
+vertical_alignment = 2
