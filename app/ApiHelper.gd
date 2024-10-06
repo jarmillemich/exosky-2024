@@ -7,10 +7,6 @@ signal populate_stars(stars: Array[StarData])
 var running_query = false
 var query_queue = []
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	var some_target: Target = Target.new(195.0149029, 12.6823534, 600)
-
 func TestEarthQuery():
 	var query = """
 		select top 5000 ra, dec, phot_g_mean_mag, r_med_photogeo, teff_gspphot, source_id
@@ -47,6 +43,14 @@ func TargettedQuery(target: Target):
 		var bucket: Array[StarData] = []
 
 		for star: StarData in pop:
+			# Check the apparent magnitude at the target
+			var abs_magnitude = Math.apparent_to_abs_magnitude(star.apparent_magnitude, star.dist_pc)
+			var distance_ly = (target.get_inertial_coordinates_ly() - star.get_inertial_coordinates_ly()).length()
+			var target_to_star_pc = distance_ly / 3.261563777
+			var app_magnitude = Math.abs_to_apparent_magnitude(abs_magnitude, target_to_star_pc)
+			if app_magnitude > 6.5:
+				continue
+
 			if !seen_stars.has(star.source_id):
 				bucket.append(star)
 			
@@ -197,7 +201,7 @@ class Target:
 
 	## Return the inertial coordinates of the star in light years, relative to Earth.
 	## Subtract these from your target exoplant coordinates to get the relative position.
-	func get_inertial_coordinates_ly():
+	func get_inertial_coordinates_ly() -> Vector3:
 		var direction = get_unit_direction()
 
 		# Conversion factor from https://en.wikipedia.org/wiki/Parsec
