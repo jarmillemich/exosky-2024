@@ -196,6 +196,7 @@ func set_stars(stars: Array[Star]):
 	mesh.instance_count = 0
 	mesh.instance_count = stars.size()
 	print("Set stars")
+	#$LoadingLabel.text = ""
 	for i in range(stars.size()):
 		#print(i)
 		var star = stars[i]
