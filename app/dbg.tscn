@@ -1,9 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://y5po3w6u60bf"]
+[gd_scene load_steps=4 format=3 uid="uid://y5po3w6u60bf"]
 
 [ext_resource type="Script" path="res://dbg.gd" id="1_qt1gb"]
 
-[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_omhx1"]
-size = Vector2(256, 256)
+[sub_resource type="Gradient" id="Gradient_es2cq"]
+offsets = PackedFloat32Array(0.65, 0.839286, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0.347981, 0.740895, 0.964715, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_gjy8b"]
+gradient = SubResource("Gradient_es2cq")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.98, 0.5)
 
 [node name="Dbg" type="Node3D"]
 transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
@@ -11,9 +20,12 @@ script = ExtResource("1_qt1gb")
 
 [node name="Sprite3D" type="Sprite3D" parent="."]
 visible = false
-texture = SubResource("PlaceholderTexture2D_omhx1")
+pixel_size = 0.05
+billboard = 1
+texture = SubResource("GradientTexture2D_gjy8b")
 
 [node name="Area3D" type="Area3D" parent="."]
 
 [node name="CollisionPolygon3D" type="CollisionPolygon3D" parent="Area3D"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
 polygon = PackedVector2Array(-1, 1, 1, 1, 1, -1, -1, -1)

@@ -59,6 +59,7 @@ offset_bottom = 23.0
 script = ExtResource("6_52xw8")
 
 [node name="StarLabel" type="Label" parent="."]
+visible = false
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -88,6 +89,7 @@ popup/item_3/id = 3
 popup/item_3/separator = true
 
 [node name="LoadingLabel" type="Label" parent="."]
+visible = false
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
