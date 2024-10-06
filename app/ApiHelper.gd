@@ -18,9 +18,20 @@ func TestEarthQuery():
 	run_query(query)
 
 	# Forward directly
-	populate_stars.emit(await populate_stars_inner)
+	var stars = await populate_stars_inner
+	populate_stars.emit(stars)
 
 	#_load_builtin_starmap("test_earth_small")
+
+	# Write a file
+	if OS.get_name() != "Web":
+		print("Saving current starmap")
+		var file = FileAccess.open("user://starmap.json", FileAccess.WRITE)
+		var srlz = []
+		for star in stars:
+			srlz.append(star.to_dict())
+		file.store_string(JSON.stringify({ "data": srlz }))
+		file.close()
 
 func TargettedQuery(target: Target):
 	# NB we'll just be emitting the stars as we get them, caller is responsible for aggregating
