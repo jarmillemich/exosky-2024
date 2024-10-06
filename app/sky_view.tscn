@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://sky_view.gd" id="1_4uy5n"]
 [ext_resource type="PackedScene" uid="uid://cqmm2karurty0" path="res://stars.tscn" id="2_m1nqp"]
 [ext_resource type="Script" path="res://StarGenerator.gd" id="3_b4213"]
-[ext_resource type="Texture2D" uid="uid://bb4ekiiom5udr" path="res://jwst.exr" id="4_5lvo6"]
+[ext_resource type="Texture2D" uid="uid://bxo4tiamjji17" path="res://web_stars.tres" id="4_r04gd"]
 [ext_resource type="Script" path="res://CameraSpinner.gd" id="5_mi6cd"]
 [ext_resource type="Script" path="res://FPSCounter.gd" id="6_52xw8"]
 
@@ -43,7 +43,7 @@ shader_params/min_size_ratio = 0.003
 shader_params/max_luminosity = 100000.0
 shader_params/scaling_gamma = 0.5
 shader_params/debug_show_rects = false
-shader_params/texture_emission = ExtResource("4_5lvo6")
+shader_params/texture_emission = ExtResource("4_r04gd")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.864275, 0, -0.50302, 0, 1, 0, 0.50302, 0, 0.864275, 0, 0, 0)

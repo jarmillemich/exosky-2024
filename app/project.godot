@@ -23,6 +23,10 @@ Draw3D="*res://Draw3D.gd"
 
 project/assembly_name="exosky-2024"
 
+[editor]
+
+export/convert_text_resources_to_binary=false
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

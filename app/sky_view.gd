@@ -19,11 +19,16 @@ func _ready():
 
 	api_helper.populate_stars.connect(_on_populate_stars)
 	
-	if OS.get_name() == "Web" || true:
+	if OS.get_name() == "Web":
 		print("Loading builtin starmap for web demo")
-		api_helper.load_builtin_starmap("hd-1690")
+		api_helper.load_builtin_starmap(my_target, "hd-1690")
+
+		# Web doesn't support exr for the textures, switch to a less good gradient
+		#$Stars.shader.texture_emission = load("res://web_stars.tres")
 	else:
 		api_helper.TargettedQuery(my_target)
+		#$Stars.shader.texture_emission = load("res://jwst.exr")
+
 
 	
 

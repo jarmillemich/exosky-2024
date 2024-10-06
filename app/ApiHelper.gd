@@ -134,10 +134,21 @@ func run_query(query: String):
 	_parse_and_emit_starmap(json)
 	
 
-func load_builtin_starmap(filename: String):
+func load_builtin_starmap(origin: Target, filename: String):
 	var starmap: JSON = load("res://data/builtin_starmaps/" + filename + ".json")
 	# NB on load the JSON data IS inside another "data" entry, this isn't a mistake
 	_parse_and_emit_starmap(starmap["data"])
+
+	print("Loaded builtin starmap %s" % filename)	
+
+	var stars = await populate_stars_inner
+
+	print("Got inner stars %d" % stars.size())
+
+	for star in stars:
+		star.origin = origin.get_inertial_coordinates_ly()
+
+	populate_stars.emit(stars)
 
 func _parse_and_emit_starmap(json):
 	var stars: Array[StarData] = []
@@ -157,8 +168,11 @@ func _parse_and_emit_starmap(json):
 
 		stars.append(StarData.new(source_id, ra, dec, apparent_magnitude, distance_pc, temperature))
 
-	emit_signal("populate_stars", stars)
-	#populate_stars_inner.emit(stars)
+	# Hack for immediate loads
+	await get_tree().process_frame
+
+	#emit_signal("populate_stars", stars)
+	populate_stars_inner.emit(stars)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
