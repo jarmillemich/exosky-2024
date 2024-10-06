@@ -1,7 +1,5 @@
 extends Node
 
-# The api part of the project called "To 
-
 signal populate_stars_inner(stars: Array[StarData])
 signal populate_stars(stars: Array[StarData])
 

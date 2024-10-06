@@ -3,6 +3,7 @@ extends Node3D
 
 const ApiHelper = preload("res://ApiHelper.gd")
 const StarGenerator = preload("res://StarGenerator.gd")
+var api_helper = ApiHelper.new()
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
